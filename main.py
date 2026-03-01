@@ -109,7 +109,7 @@ def throwBobber(x,y):
     click()
     time.sleep(0.7)
 
-def handleBite(everything, targetItem, x,y):
+def handleBite(everything, targetItems, x,y):
     screenX = x + searchBoxX
     screenY = y + searchBoxY
     print(f"BITE! @{x}/{y} screen: {screenX}/{screenY}")
@@ -120,11 +120,17 @@ def handleBite(everything, targetItem, x,y):
     screenshot = pyautogui.screenshot(region=(screenX-120,screenY-100,290,100))
     cvimg = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
     res = tesseract_ocr(cvimg)
-    if(is_text_match(res,targetItem)):
+    match = False
+    for target in targetItems:
+        if(is_text_match(res,target)):
+            match = True
+            break
+    
+    if(match):
         click()
         return True
     else:
-        print(f"{res} is probably not {targetItem}. Waiting...")
+        print(f"{res} is probably not in {targetItems}. Waiting...")
         time.sleep(0.5)
         return False
     #cv2.imshow("screen",cvimg)
@@ -132,7 +138,7 @@ def handleBite(everything, targetItem, x,y):
     #cv2.destroyAllWindows()
     #cv2.imwrite(f"item_{time.time()}.png",cvimg)
 
-def check(everything, targetItem):
+def check(everything, targetItems):
     lastExec = time.time()
     lastBobberX = 0
     lastBobberY = 0
@@ -155,7 +161,7 @@ def check(everything, targetItem):
         distance = dist(lastBobberX,lastBobberY,bobberX,bobberY)
         if(distance > 2):
             print(f"BOBER CATCH @{bobberX}/{bobberY} d: {distance}")
-            if(handleBite(everything, targetItem, bobberX,bobberY)):
+            if(handleBite(everything, targetItems, bobberX,bobberY)):
                 return
             else:
                 lastBobberX = bobberX
@@ -163,7 +169,7 @@ def check(everything, targetItem):
                 continue
 
 fish_everything=False
-fish_for="Hellstone Crate"
+fish_for=["Hellstone Crate","Mythril Crate", "Titanium Crate"]
 for i in range(50):
     print(f"Throw {i}")
     throwBobber(searchBoxOffsetX,searchBoxOffsetY)
